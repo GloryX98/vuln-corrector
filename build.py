@@ -33,8 +33,13 @@ def main():
         "--onefile", "--console", "--name", "vuln_corrector",
         "--collect-all", "openpyxl",          # ensure .xlsx support is bundled
         "--distpath", "dist", "--workpath", "build", "--specpath", "build",
-        "launch.py",                          # dual mode: web UI by default, CLI with a file
     ]
+    # App icon: .ico on Windows, .png on macOS (PyInstaller converts it); Linux has none.
+    sysname = platform.system()
+    icon = "icon.ico" if sysname == "Windows" else ("icon.png" if sysname == "Darwin" else None)
+    if icon and os.path.exists(icon):
+        cmd += ["--icon", icon]
+    cmd += ["launch.py"]                       # dual mode: web UI by default, CLI with a file
     print("Running:", " ".join(cmd))
     subprocess.check_call(cmd)
     ext = ".exe" if platform.system() == "Windows" else ""

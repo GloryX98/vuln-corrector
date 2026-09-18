@@ -38,34 +38,68 @@ MAX_UPLOAD = 30 * 1024 * 1024   # 30 MB
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
+import base64 as _b64  # noqa: E402
+
+# Brand mark: a shield with a check — a security finding, corrected/verified.
+LOGO_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' aria-hidden='true'>"
+    "<path d='M12 2 3.9 5.1v6.2c0 4.9 3.4 8.6 8.1 10.5 4.7-1.9 8.1-5.6 8.1-10.5V5.1z' fill='#61afef'/>"
+    "<path d='M8.1 12.2l2.7 2.7 5.1-5.4' fill='none' stroke='#1b1f27' stroke-width='2.3'"
+    " stroke-linecap='round' stroke-linejoin='round'/></svg>"
+)
+# Drop-zone glyph: a spreadsheet/document with an up-arrow (upload a sheet).
+DROP_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#61afef'"
+    " stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>"
+    "<path d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/>"
+    "<path d='M14 3v5h5'/><path d='M12 17.5v-6'/><path d='M9.5 14l2.5-2.5 2.5 2.5'/></svg>"
+)
+FAVICON = "data:image/svg+xml;base64," + _b64.b64encode(LOGO_SVG.encode("utf-8")).decode("ascii")
+
 PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vuln Rating & CVSS Corrector</title>
+<link rel="icon" href="__FAVICON__">
 <style>
 :root{--bg:#282c34;--panel:#21252b;--panel2:#2c313a;--line:#3b414d;--fg:#dcdfe4;--mut:#828997;
---accent:#61afef;--crit:#e06c75;--high:#e5926a;--med:#e5c07b;--low:#98c379;--ok:#98c379;}
+--accent:#61afef;--accent-ink:#1b1f27;--crit:#e06c75;--high:#e5926a;--med:#e5c07b;--low:#98c379;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:Montserrat,'Segoe UI',system-ui,sans-serif;
-font-size:14px;line-height:1.4}
-.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 64px}
-h1{font-size:22px;font-weight:600;margin:0 0 4px}
-.sub{color:var(--mut);margin-bottom:24px}
-.drop{display:block;border:2px dashed var(--line);border-radius:12px;padding:40px 20px;
-text-align:center;background:var(--panel);transition:.15s;cursor:pointer}
+font-size:14px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 64px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.logo{width:40px;height:40px;flex:0 0 auto;display:block}
+.logo svg{width:100%;height:100%}
+h1{font-size:22px;font-weight:600;margin:0}
+.sub{color:var(--mut);margin:0 0 28px 54px}
+.sub b{color:var(--fg);font-weight:600}
+
+.uploader{margin:0 auto}
+.drop{max-width:560px;margin:0 auto;display:flex;flex-direction:column;align-items:center;
+border:2px dashed var(--line);border-radius:16px;padding:44px 32px;background:var(--panel);
+text-align:center;transition:.15s;cursor:pointer}
 .drop.hot{border-color:var(--accent);background:var(--panel2)}
-.drop p{margin:6px 0;color:var(--mut)}
-.drop b{color:var(--fg)}
+.drop .glyph{width:56px;height:56px;margin-bottom:16px}
+.drop .glyph svg{width:100%;height:100%}
+.drop .big{font-size:16px;margin:0 0 6px;color:var(--fg)}
+.drop .hint{font-size:12.5px;color:var(--mut);margin:0}
+.or{display:flex;align-items:center;gap:12px;color:var(--mut);font-size:11px;letter-spacing:1px;
+width:180px;margin:22px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.browse{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;
+padding:11px 26px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.fname{margin:18px 0 0;color:var(--fg);font-weight:600;font-size:13px;word-break:break-all}
 input[type=file]{display:none}
-.row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
-button{background:var(--accent);color:#1b1f27;border:0;border-radius:8px;padding:10px 20px;
+
+.actions{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:11px 24px;
 font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
-button:disabled{opacity:.5;cursor:not-allowed}
-button.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
-.fname{color:var(--fg);font-weight:600}
-.bar{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.note{color:var(--mut);font-size:12.5px}
+.bar{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:22px}
 .bar > i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
-.status{color:var(--mut);margin-top:8px;font-size:13px;min-height:18px}
+.status{color:var(--mut);margin-top:8px;font-size:13px;min-height:18px;text-align:center}
 table{border-collapse:collapse;width:100%;margin-top:22px;font-size:13px}
 th{text-align:left;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.5px;
 padding:8px 10px;border-bottom:1px solid var(--line)}
@@ -76,25 +110,31 @@ td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .rf-Medium{background:rgba(229,192,123,.14);color:var(--med)}
 .rf-Low{background:rgba(152,195,121,.14);color:var(--low)}
 .arrow{color:var(--mut);margin:0 4px}
-.err{color:var(--crit);margin-top:16px;white-space:pre-wrap}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:22px}
+.err{color:var(--crit);margin-top:16px;white-space:pre-wrap;text-align:center}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:24px}
 .muted{color:var(--mut)}
 a.dl{display:inline-block;text-decoration:none}
 </style></head><body><div class="wrap">
-<h1>Vuln Rating &amp; CVSS Corrector</h1>
-<div class="sub">Upload a Nessus/Tenable findings sheet (.csv or .xlsx). It corrects the
-<b>Vulnerability Rating</b> and <b>CVSS</b> columns from Tenable (NVD fallback) and leaves everything else untouched.</div>
+<div class="head"><span class="logo">__LOGO__</span>
+<h1>Vuln Rating &amp; CVSS Corrector</h1></div>
+<div class="sub">Corrects the <b>Vulnerability Rating</b> and <b>CVSS</b> columns of a Nessus/Tenable
+findings sheet (.csv or .xlsx) from Tenable (NVD fallback) and leaves everything else untouched.</div>
 
-<label class="drop" id="drop">
+<div class="uploader">
+  <div class="drop" id="drop">
+    <span class="glyph">__DROPICON__</span>
+    <p class="big"><b>Drop your sheet here</b> to start</p>
+    <p class="hint">.csv or .xlsx &middot; nothing is stored on the server after download</p>
+    <div class="or"><span>OR</span></div>
+    <button type="button" class="browse" id="browse">Browse files</button>
+    <p class="fname" id="fname"></p>
+  </div>
   <input type="file" id="file" accept=".csv,.xlsx,.xlsm">
-  <p style="font-size:16px"><b>Drop your sheet here</b> or click to choose</p>
-  <p>.csv or .xlsx &middot; nothing is stored on the server after download</p>
-  <p class="fname" id="fname"></p>
-</label>
+</div>
 
-<div class="row">
+<div class="actions">
   <button id="go" disabled>Correct sheet</button>
-  <span class="muted" id="hint">Needs internet — it queries tenable.com / nvd.nist.gov.</span>
+  <span class="note" id="hint">Needs internet — it queries tenable.com / nvd.nist.gov.</span>
 </div>
 
 <div id="progress" style="display:none">
@@ -121,8 +161,11 @@ var drop=document.getElementById('drop'), fileInput=document.getElementById('fil
     result=document.getElementById('result'), summary=document.getElementById('summary'),
     dl=document.getElementById('dl'), tableWrap=document.getElementById('tableWrap');
 
+var browse=document.getElementById('browse');
 function pick(f){ file=f; fname.textContent=f?('Selected: '+f.name):''; go.disabled=!f; }
 fileInput.onchange=function(){ pick(fileInput.files[0]); };
+browse.onclick=function(ev){ ev.stopPropagation(); fileInput.click(); };
+drop.addEventListener('click',function(){ fileInput.click(); });
 ['dragover','dragenter'].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.add('hot');});});
 ['dragleave','drop'].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.remove('hot');});});
 drop.addEventListener('drop',function(ev){ if(ev.dataTransfer.files.length) pick(ev.dataTransfer.files[0]); });
@@ -168,6 +211,10 @@ function fail(m){ prog.style.display='none'; go.disabled=false; err.textContent=
 </script>
 </div></body></html>
 """
+
+PAGE = (PAGE.replace("__FAVICON__", FAVICON)
+            .replace("__LOGO__", LOGO_SVG)
+            .replace("__DROPICON__", DROP_SVG))
 
 
 def parse_multipart(body: bytes, boundary: bytes):
