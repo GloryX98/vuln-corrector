@@ -72,7 +72,25 @@ pip install -r requirements.txt
 python3 vuln_corrector.py findings.csv        # use 'python' on Windows
 ```
 
-## Building a standalone binary (per OS)
+## Prebuilt binaries (all three OSes)
+
+Native, standalone executables are built automatically by GitHub Actions and
+published on the **[Releases](../../releases)** page:
+
+| OS | File | How to run |
+|----|------|-----------|
+| Windows | `vuln_corrector-windows-x64.exe` | double-click, or `vuln_corrector-windows-x64.exe findings.csv` |
+| macOS   | `vuln_corrector-macos-arm64`      | `chmod +x vuln_corrector-macos-arm64 && ./vuln_corrector-macos-arm64 findings.csv` |
+| Linux   | `vuln_corrector-linux-x64`        | `chmod +x vuln_corrector-linux-x64 && ./vuln_corrector-linux-x64 findings.csv` |
+
+> macOS/Linux executables have **no file extension** — that is the normal
+> convention on those systems; mark them executable with `chmod +x` and run.
+
+Every push to `main` also uploads the three binaries as downloadable **workflow
+artifacts** under the Actions tab; pushing a version tag (e.g. `git tag v1.0.0 &&
+git push origin v1.0.0`) cuts a Release with all three attached.
+
+## Building a standalone binary yourself (per OS)
 
 PyInstaller cannot cross-compile, so build on the OS you want a binary for:
 
@@ -83,7 +101,6 @@ PyInstaller cannot cross-compile, so build on the OS you want a binary for:
 | Linux   | `./build.sh` (or `python3 build.py`) | `dist/vuln_corrector` |
 
 On macOS/Linux make the scripts executable first: `chmod +x build.sh`.
-The bundled `vuln_corrector.exe` in this package is the Windows x64 build.
 
 ### macOS notes
 - If HTTPS lookups fail with a certificate error on a python.org build, run once:
