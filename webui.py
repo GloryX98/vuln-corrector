@@ -51,8 +51,8 @@ font-size:14px;line-height:1.4}
 .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 64px}
 h1{font-size:22px;font-weight:600;margin:0 0 4px}
 .sub{color:var(--mut);margin-bottom:24px}
-.drop{border:2px dashed var(--line);border-radius:12px;padding:40px 20px;text-align:center;
-background:var(--panel);transition:.15s;cursor:pointer}
+.drop{display:block;border:2px dashed var(--line);border-radius:12px;padding:40px 20px;
+text-align:center;background:var(--panel);transition:.15s;cursor:pointer}
 .drop.hot{border-color:var(--accent);background:var(--panel2)}
 .drop p{margin:6px 0;color:var(--mut)}
 .drop b{color:var(--fg)}
