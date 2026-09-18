@@ -64,6 +64,32 @@ Columns are auto-detected (e.g. `Vulnerability_Title`, `Vulnerability_Rating`,
 `CVSS`, `CVE`, plus common variants like `Severity`, `Risk_Factor`, `Base_Score`).
 If detection misses, name them explicitly with the `--*-col` options.
 
+## Browser UI (no command line)
+
+Prefer a web page? Run the bundled server and use it from your browser — drag the
+sheet in, watch progress, download the corrected file. The lookups run
+server-side (the browser cannot call Tenable directly because of CORS).
+
+```
+python web/app.py            # opens http://127.0.0.1:8000
+# or: web/run_web.bat  (Windows)   |   ./web/run_web.sh  (macOS/Linux)
+```
+
+Only the standard library is needed for CSV; `.xlsx` uploads need `openpyxl`.
+Nothing is stored on the server once you download the result.
+
+### Host it online (optional)
+A `Dockerfile` is included so it can be deployed anywhere that runs containers:
+
+```
+docker build -t vuln-corrector-web -f web/Dockerfile .
+docker run --rm -p 8000:8000 vuln-corrector-web
+```
+
+It honours the `PORT`/`HOST` env vars, so it drops straight onto Render, Railway,
+Fly.io, etc. Note: a public instance queries Tenable/NVD on every request, so keep
+it private or add access control to avoid rate-limiting.
+
 ## Running from source (any OS, no build)
 
 ```
