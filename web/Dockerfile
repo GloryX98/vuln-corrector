@@ -8,10 +8,10 @@ WORKDIR /app
 # openpyxl is only needed for .xlsx uploads; HTTP uses the standard library.
 RUN pip install --no-cache-dir openpyxl
 
-# The web app imports the sibling module, so copy both.
 COPY vuln_corrector.py /app/vuln_corrector.py
-COPY web/app.py /app/web/app.py
+COPY webui.py /app/webui.py
 
+# In a container, listen on all interfaces on the platform-provided port.
 ENV HOST=0.0.0.0 PORT=8000
 EXPOSE 8000
-CMD ["python", "web/app.py"]
+CMD ["python", "webui.py"]

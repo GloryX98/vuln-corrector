@@ -31,8 +31,9 @@ def main():
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile", "--console", "--name", "vuln_corrector",
+        "--collect-all", "openpyxl",          # ensure .xlsx support is bundled
         "--distpath", "dist", "--workpath", "build", "--specpath", "build",
-        "vuln_corrector.py",
+        "launch.py",                          # dual mode: web UI by default, CLI with a file
     ]
     print("Running:", " ".join(cmd))
     subprocess.check_call(cmd)

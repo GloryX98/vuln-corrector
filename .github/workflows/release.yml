@@ -41,7 +41,7 @@ jobs:
         run: python -m pip install --upgrade pip pyinstaller openpyxl
 
       - name: Build binary
-        run: pyinstaller --onefile --console --name vuln_corrector vuln_corrector.py
+        run: pyinstaller --onefile --console --name vuln_corrector --collect-all openpyxl launch.py
 
       - name: Stage artifact
         shell: bash

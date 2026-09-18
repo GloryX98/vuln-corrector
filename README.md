@@ -37,18 +37,28 @@ Rows whose finding cannot be resolved online are left exactly as they were.
 
 ## Usage
 
-Windows (prebuilt `vuln_corrector.exe`):
+The executable has **two modes**:
+
+- **Double-click it (no arguments)** → it starts a local web interface and opens
+  your browser. It listens only on your machine (an uncommon local port, default
+  `43117`) — nothing is exposed to the internet. The page talks only to the local
+  app; the app is what queries Tenable in the background.
+- **Give it a file (or `--cli`)** → classic command-line correction.
+
 ```
-vuln_corrector.exe  findings.csv
+vuln_corrector.exe                         # web interface (double-click)
+vuln_corrector.exe  findings.csv           # command line
 vuln_corrector.exe  findings.xlsx  -o fixed.xlsx  --report changes.csv
-vuln_corrector.exe                         # no args → it asks for the path
+vuln_corrector.exe  --web                  # force the web interface
 ```
-You can also drag a `.csv`/`.xlsx` file onto `vuln_corrector.exe`.
+You can also drag a `.csv`/`.xlsx` file onto `vuln_corrector.exe` to run the CLI.
 
 macOS / Linux (binary built with `build.sh`, or straight from source):
 ```
-./vuln_corrector  findings.csv
-python3 vuln_corrector.py  findings.csv    # no build needed for CSV
+./vuln_corrector                 # web interface
+./vuln_corrector  findings.csv   # command line
+python3 launch.py                # from source: web interface
+python3 vuln_corrector.py findings.csv   # from source: CLI
 ```
 
 ### Options
@@ -66,17 +76,26 @@ If detection misses, name them explicitly with the `--*-col` options.
 
 ## Browser UI (no command line)
 
-Prefer a web page? Run the bundled server and use it from your browser — drag the
-sheet in, watch progress, download the corrected file. The lookups run
-server-side (the browser cannot call Tenable directly because of CORS).
+Just double-click the executable — it launches the web interface and opens your
+browser at `http://127.0.0.1:43117`. Drag the sheet in, watch progress, download
+the corrected file.
 
+- It listens **only on your machine** (localhost), never on the network.
+- The **browser never contacts Tenable** — it only talks to the local app, which
+  performs the Tenable/NVD lookups itself and returns the results. (This is also
+  why it can't be a pure static page: cross-site calls to Tenable are blocked by
+  CORS.)
+- Nothing is stored on the server once you download the result.
+
+From source instead of the exe:
 ```
-python web/app.py            # opens http://127.0.0.1:8000
+python launch.py             # or: python webui.py
 # or: web/run_web.bat  (Windows)   |   ./web/run_web.sh  (macOS/Linux)
 ```
 
-Only the standard library is needed for CSV; `.xlsx` uploads need `openpyxl`.
-Nothing is stored on the server once you download the result.
+The port `43117` is uncommon and below the range Windows reserves; if it is ever
+busy the app moves to the next free port and prints the exact URL. Only the
+standard library is needed for CSV; `.xlsx` uploads need `openpyxl`.
 
 ### Host it online (optional)
 A `Dockerfile` is included so it can be deployed anywhere that runs containers:
@@ -103,11 +122,11 @@ python3 vuln_corrector.py findings.csv        # use 'python' on Windows
 Native, standalone executables are built automatically by GitHub Actions and
 published on the **[Releases](../../releases)** page:
 
-| OS | File | How to run |
+| OS | File | Double-click → web UI / with a file → CLI |
 |----|------|-----------|
-| Windows | `vuln_corrector-windows-x64.exe` | double-click, or `vuln_corrector-windows-x64.exe findings.csv` |
-| macOS   | `vuln_corrector-macos-arm64`      | `chmod +x vuln_corrector-macos-arm64 && ./vuln_corrector-macos-arm64 findings.csv` |
-| Linux   | `vuln_corrector-linux-x64`        | `chmod +x vuln_corrector-linux-x64 && ./vuln_corrector-linux-x64 findings.csv` |
+| Windows | `vuln_corrector-windows-x64.exe` | double-click for the web UI, or `vuln_corrector-windows-x64.exe findings.csv` |
+| macOS   | `vuln_corrector-macos-arm64`      | `chmod +x vuln_corrector-macos-arm64 && ./vuln_corrector-macos-arm64` |
+| Linux   | `vuln_corrector-linux-x64`        | `chmod +x vuln_corrector-linux-x64 && ./vuln_corrector-linux-x64` |
 
 > macOS/Linux executables have **no file extension** — that is the normal
 > convention on those systems; mark them executable with `chmod +x` and run.
