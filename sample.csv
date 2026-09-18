@@ -1,0 +1,7 @@
+System_IP,Vulnerability_Title,Vulnerability_Rating,CVE,CVSS,Assignee
+10.0.0.5,Apache Tomcat 9.0.0.M1 < 9.0.98 multiple vulnerabilities,Medium,"CVE-2024-56337,CVE-2024-50379,CVE-2024-54677",7,Kwame Mensah
+10.0.0.6,SSL Medium Strength Cipher Suites Supported (SWEET32),Medium,,5,Ama Boateng
+10.0.0.7,OpenSSH < 10.4 Multiple Vulnerabilities,High,CVE-2026-59999,10,Kojo Asante
+10.0.0.8,SSH Server CBC Mode Ciphers Enabled,Low,,3,Efua Owusu
+10.0.0.9,JQuery 1.2 < 3.5.0 Multiple XSS,Medium,"CVE-2020-11022,CVE-2020-11023",4,Yaw Darko
+10.0.0.10,SSLv3 Padding Oracle On Downgraded Legacy Encryption Vulnerability (POODLE),Medium,,4,Adjoa Nkrumah

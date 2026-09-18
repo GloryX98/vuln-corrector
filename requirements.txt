@@ -1,0 +1,7 @@
+# Runtime dependency is optional:
+#   * CSV input  -> nothing beyond the Python 3 standard library (HTTP uses urllib)
+#   * XLSX input -> openpyxl
+openpyxl>=3.1
+
+# Build-only (to produce a standalone binary with build.py / build.sh / build.bat):
+#   pyinstaller>=6.0
